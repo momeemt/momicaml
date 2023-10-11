@@ -1,0 +1,4 @@
+(executable
+ (public_name momicaml)
+ (name main)
+ (libraries momicaml))
