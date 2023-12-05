@@ -1,0 +1,21 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v22
+      - run: nix-build .
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v22
+      - run: nix-env -f ./nix/pkgs.nix -iA opam ocamlPackages.ocaml ocamlPackages.dune_2 ocamlPackages.alcotest
+      - run: |
+          opam init
+          eval $(opam env)
+          dune runtest
+
