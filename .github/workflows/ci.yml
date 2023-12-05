@@ -17,5 +17,6 @@ jobs:
       - run: |
           opam init
           eval $(opam env)
+          opam install alcotest
           dune runtest
 
