@@ -1,4 +1,4 @@
-open Momicaml.Lib
+open Momicaml.Environment
 
 let test_lookup () =
   Alcotest.(check int) "lookup" 1 (Environment.lookup "x" (Environment.ext (Environment.emptyEnv()) "x" 1))
