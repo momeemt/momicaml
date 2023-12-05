@@ -1,9 +1,10 @@
 let rec gcd x y =
-  if x < 0 then gcd (-x) y
-  else if y < 0 then gcd x (-y)
-  else if x = y then x
-  else if x > y then gcd (x-y) y
-  else gcd x (y-x)
+  match (abs x, abs y) with
+  | (x, 0) -> x
+  | (0, y) -> y
+  | (x, y) when x = y -> x
+  | (x, y) when x > y -> gcd (x-y) y
+  | (x, y) -> gcd x (y-x)
 
 let fib n =
   let rec fibr n a b =
@@ -48,6 +49,12 @@ let () =
 
   let a, b = -18, 24 in
   Printf.printf "gcd(%d, %d) = %d\n" a b (gcd a b);  (* 6 *)
+
+  let a, b = 0, 24 in
+  Printf.printf "gcd(%d, %d) = %d\n" a b (gcd a b);  (* 24 *)
+
+  let a, b = -18, 0 in
+  Printf.printf "gcd(%d, %d) = %d\n" a b (gcd a b);  (* 18 *)
 
   let n = 10 in
   Printf.printf "fib(%d) = %d\n" n (fib n);  (* 55 *)

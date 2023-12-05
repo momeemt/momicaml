@@ -1,8 +1,17 @@
 { pkgs ? import ./nix/pkgs.nix }:
+let
+  frameworks = pkgs.darwin.apple_sdk.frameworks;
+in
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    dune_2
-    ocaml
+    opam
+    ocamlPackages.ocaml
+    ocamlPackages.dune_2
+    ocamlPackages.ocaml-lsp
+    ocamlPackages.batteries
     ocamlPackages.alcotest
+    frameworks.Security
+    frameworks.CoreFoundation
+    frameworks.CoreServices
   ];
 }

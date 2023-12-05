@@ -1,2 +1,9 @@
 (test
- (name momicaml))
+ (name test_environment)
+ (libraries momicaml alcotest)
+)
+(env
+  (dev
+    (flags (:standard -w @A)))
+)
+

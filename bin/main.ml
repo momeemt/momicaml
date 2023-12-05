@@ -96,41 +96,76 @@ let rec eval2 e =
       end
   | _ -> failwith "unknown expression e"
 
+let binop eval_f f e1 e2 =
+  match (eval_f e1, eval_f e2) with
+  | (IntVal n1, IntVal n2) -> IntVal(f n1 n2)
+  | _ -> failwith "integer values expected"
+
+let rec eval2b e =
+  match e with
+  | IntLit n -> IntVal n
+  | Plus (e1, e2) -> binop eval2b (+) e1 e2
+  | Sub (e1, e2) -> binop eval2b (-) e1 e2
+  | Times (e1, e2) -> binop eval2b ( * ) e1 e2
+  | Div (e1, e2) -> binop eval2b (/) e1 e2
+  | Eq (e1, e2) ->
+    begin
+      match (eval2b e1, eval2b e2) with
+      | (IntVal n1, IntVal n2) -> BoolVal(n1=n2)
+      | (BoolVal b1, BoolVal b2) -> BoolVal(b1=b2)
+      | _ -> failwith "wrong value"
+    end
+  | Greater (e1, e2) ->
+      begin
+        match (eval2b e1, eval2b e2) with
+        | (IntVal n1, IntVal n2) -> BoolVal(n1 > n2)
+        | _ -> failwith "wrong value"
+      end
+  | BoolLit b -> BoolVal b
+  | If (cond, _then, _else) ->
+      begin
+        match (eval2b cond) with
+        | BoolVal true -> eval2b _then
+        | BoolVal false -> eval2b _else
+        | _ -> failwith "wrong value"
+      end
+  | _ -> failwith "unknown expression e"
+
 let () =
-  let v1 = eval2 (IntLit 1) in
+  let v1 = eval2b (IntLit 1) in
   Printf.printf "%s\n" (string_of_value v1);;
 
-  let v2 = eval2 (IntLit 11) in
+  let v2 = eval2b (IntLit 11) in
   Printf.printf "%s\n" (string_of_value v2);;
 
-  let v3 = eval2 (Plus (IntLit 1, Plus (IntLit 2, IntLit 11))) in
+  let v3 = eval2b (Plus (IntLit 1, Plus (IntLit 2, IntLit 11))) in
   Printf.printf "%s\n" (string_of_value v3);;
 
-  let v4 = eval2 (Times (IntLit 1, Plus (IntLit 2, IntLit 11))) in
+  let v4 = eval2b (Times (IntLit 1, Plus (IntLit 2, IntLit 11))) in
   Printf.printf "%s\n" (string_of_value v4);;
 
-  let v5 = eval2 (If (Eq(IntLit 2, IntLit 11), Times(IntLit 1, IntLit 2), Times(IntLit 1, Plus(IntLit 2,IntLit 3)))) in
+  let v5 = eval2b (If (Eq(IntLit 2, IntLit 11), Times(IntLit 1, IntLit 2), Times(IntLit 1, Plus(IntLit 2,IntLit 3)))) in
   Printf.printf "%s\n" (string_of_value v5);;
 
-  let v6 = eval2 (Eq (IntLit 1, IntLit 1)) in
+  let v6 = eval2b (Eq (IntLit 1, IntLit 1)) in
   Printf.printf "%s\n" (string_of_value v6);;
 
-  let v7 = eval2 (Eq (IntLit 1, IntLit 2)) in
+  let v7 = eval2b (Eq (IntLit 1, IntLit 2)) in
   Printf.printf "%s\n" (string_of_value v7);;
 
-  let v8 = eval2 (Eq (BoolLit true, BoolLit true)) in
+  let v8 = eval2b (Eq (BoolLit true, BoolLit true)) in
   Printf.printf "%s\n" (string_of_value v8);;
 
-  let v9 = eval2 (Eq (BoolLit true, BoolLit false)) in
+  let v9 = eval2b (Eq (BoolLit true, BoolLit false)) in
   Printf.printf "%s\n" (string_of_value v9);;
   
   (* Plusにbool値を与えたので例外が投げられた *)
-  try let v_err1 = eval2 (Plus (BoolLit true, BoolLit false)) in () with
+  try let _ = eval2b (Plus (BoolLit true, BoolLit false)) in () with
   | Failure msg -> Printf.printf "%s\n" msg;;
 
   (* intとboolを比較したので例外が投げられた *)
-  try let v_err2 = eval2 (Eq (BoolLit true, IntLit 1)) in () with
+  try let _ = eval2b (Eq (BoolLit true, IntLit 1)) in () with
   | Failure msg -> Printf.printf "%s\n" msg;;
 
-  let v10 = eval2 (If (Greater (IntLit 3, IntLit 1), (IntLit 100), (IntLit 200))) in
+  let v10 = eval2b (If (Greater (IntLit 3, IntLit 1), (IntLit 100), (IntLit 200))) in
   Printf.printf "%s\n" (string_of_value v10);;

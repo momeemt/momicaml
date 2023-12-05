@@ -1,2 +1,6 @@
 (library
  (name momicaml))
+(env
+  (dev
+    (flags (:standard -w @A)))
+)
