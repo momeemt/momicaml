@@ -22,12 +22,12 @@ let rec exp_abs e =
   | Sub (e1, e2) -> Sub (exp_abs e1, exp_abs e2)
   | Times (e1, e2) -> Times (exp_abs e1, exp_abs e2)
   | Div (e1, e2) -> Div (exp_abs e1, exp_abs e2)
+  | _ -> failwith "unknown expression"
 
 let rec string_of_value v =
   match v with
   | IntVal n -> string_of_int n
   | BoolVal b -> string_of_bool b
-  | _ -> failwith "wrong value"
 
 let rec string_of_exp e =
   match e with
@@ -36,6 +36,7 @@ let rec string_of_exp e =
   | Sub (e1, e2) -> "(" ^ (string_of_exp e1) ^ " - " ^ (string_of_exp e2) ^ ")"
   | Times (e1, e2) -> "(" ^ (string_of_exp e1) ^ " * " ^ (string_of_exp e2) ^ ")"
   | Div (e1, e2) -> "(" ^ (string_of_exp e1) ^ " / " ^ (string_of_exp e2) ^ ")"
+  | _ -> failwith "unknown expression"
 
 let rec eval1 e =
   match e with
@@ -94,7 +95,6 @@ let rec eval2 e =
         | BoolVal false -> eval2 _else
         | _ -> failwith "wrong value"
       end
-  | _ -> failwith "unknown expression e"
 
 let binop eval_f f e1 e2 =
   match (eval_f e1, eval_f e2) with
@@ -129,7 +129,6 @@ let rec eval2b e =
         | BoolVal false -> eval2b _else
         | _ -> failwith "wrong value"
       end
-  | _ -> failwith "unknown expression e"
 
 let () =
   let v1 = eval2b (IntLit 1) in
