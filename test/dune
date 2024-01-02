@@ -1,5 +1,5 @@
-(test
- (name test_environment)
+(tests
+ (names test_environment test_eval)
  (libraries momicaml alcotest)
 )
 (env

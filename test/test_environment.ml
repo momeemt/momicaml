@@ -47,4 +47,3 @@ let () =
         Alcotest.test_case "lookup_duplicate" `Quick test_lookup_duplicate_items_environment;
       ]);
   ]
-

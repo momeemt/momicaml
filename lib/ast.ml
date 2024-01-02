@@ -10,6 +10,8 @@ module Ast = struct
     | If of exp * exp * exp
     | Eq of exp * exp
     | Greater of exp * exp
+    | Var of string
+    | Let of string * exp * exp
 
   type value =
     | IntVal of int
@@ -22,7 +24,7 @@ module Ast = struct
     | Sub (e1, e2) -> Sub (exp_abs e1, exp_abs e2)
     | Times (e1, e2) -> Times (exp_abs e1, exp_abs e2)
     | Div (e1, e2) -> Div (exp_abs e1, exp_abs e2)
-    | If (_, _, _) | Eq (_, _) | Greater (_, _) | BoolLit _ -> failwith "type error"
+    | If (_, _, _) | Eq (_, _) | Greater (_, _) | BoolLit _ | Var _ | Let (_, _, _) -> failwith "type error"
 
   let string_of_value v =
     match v with
@@ -43,41 +45,8 @@ module Ast = struct
     | Eq (e1, e2) -> "(" ^ string_of_exp e1 ^ " = " ^ string_of_exp e2 ^ ")"
     | Greater (e1, e2) ->
         "(" ^ string_of_exp e1 ^ " > " ^ string_of_exp e2 ^ ")"
-
-  let binop eval_f f e1 e2 =
-    match (eval_f e1, eval_f e2) with
-    | IntVal n1, IntVal n2 -> IntVal (f n1 n2)
-    | IntVal _, _ | _, IntVal _ -> failwith "type error"
-    | BoolVal _, BoolVal _ -> failwith "type error"
-
-  let rec eval e =
-    match e with
-    | IntLit n -> IntVal n
-    | Plus (e1, e2) -> binop eval (+) e1 e2
-    | Sub (e1, e2) -> binop eval (-) e1 e2
-    | Times (e1, e2) -> binop eval ( * ) e1 e2
-    | Div (e1, e2) -> binop eval (/) e1 e2
-    | Eq (e1, e2) ->
-      begin
-        match (eval e1, eval e2) with
-        | IntVal n1, IntVal n2 -> BoolVal (n1 = n2)
-        | BoolVal b1, BoolVal b2 -> BoolVal (b1 = b2)
-        | IntVal _, BoolVal _ | BoolVal _, IntVal _ -> failwith "type error"
-      end
-    | Greater (e1, e2) ->
-      begin
-        match (eval e1, eval e2) with
-        | IntVal n1, IntVal n2 -> BoolVal (n1 > n2)
-        | IntVal _, BoolVal _ | BoolVal _, IntVal _ -> failwith "type error"
-        | BoolVal _, BoolVal _ -> failwith "type error"
-      end
-    | BoolLit b -> BoolVal b
-    | If (cond, _then, _else) ->
-      begin
-        match eval cond with
-        | BoolVal true -> eval _then
-        | BoolVal false -> eval _else
-        | IntVal _ -> failwith "type error"
-      end
+    | Var x -> x
+    | Let (x, e1, e2) ->
+        "(let " ^ x ^ " = " ^ string_of_exp e1 ^ " in " ^ string_of_exp e2 ^ ")"
 end
 

@@ -9,6 +9,8 @@ module Ast : sig
     | If of exp * exp * exp
     | Eq of exp * exp
     | Greater of exp * exp
+    | Var of string
+    | Let of string * exp * exp
 
   type value =
     | IntVal of int
@@ -17,7 +19,5 @@ module Ast : sig
   val exp_abs : exp -> exp
   val string_of_value : value -> string
   val string_of_exp : exp -> string
-  val eval : exp -> value
-  val binop : (exp -> value) -> (int -> int -> int) -> exp -> exp -> value
 end
 
