@@ -16,4 +16,8 @@ pkgs.mkShell {
     frameworks.CoreFoundation
     frameworks.CoreServices
   ];
+
+  shellHook = ''
+    eval $(opam env)
+  '';
 }
