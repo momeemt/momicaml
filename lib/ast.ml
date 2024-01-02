@@ -1,4 +1,5 @@
 [@@@warning "-37"]
+
 module Ast = struct
   type exp =
     | IntLit of int
@@ -13,9 +14,7 @@ module Ast = struct
     | Var of string
     | Let of string * exp * exp
 
-  type value =
-    | IntVal of int
-    | BoolVal of bool
+  type value = IntVal of int | BoolVal of bool
 
   let rec exp_abs e =
     match e with
@@ -24,12 +23,15 @@ module Ast = struct
     | Sub (e1, e2) -> Sub (exp_abs e1, exp_abs e2)
     | Times (e1, e2) -> Times (exp_abs e1, exp_abs e2)
     | Div (e1, e2) -> Div (exp_abs e1, exp_abs e2)
-    | If (_, _, _) | Eq (_, _) | Greater (_, _) | BoolLit _ | Var _ | Let (_, _, _) -> failwith "type error"
+    | If (_, _, _)
+    | Eq (_, _)
+    | Greater (_, _)
+    | BoolLit _ | Var _
+    | Let (_, _, _) ->
+        failwith "type error"
 
   let string_of_value v =
-    match v with
-    | IntVal n -> string_of_int n
-    | BoolVal b -> string_of_bool b
+    match v with IntVal n -> string_of_int n | BoolVal b -> string_of_bool b
 
   let rec string_of_exp e =
     match e with
@@ -49,4 +51,3 @@ module Ast = struct
     | Let (x, e1, e2) ->
         "(let " ^ x ^ " = " ^ string_of_exp e1 ^ " in " ^ string_of_exp e2 ^ ")"
 end
-

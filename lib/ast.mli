@@ -12,12 +12,9 @@ module Ast : sig
     | Var of string
     | Let of string * exp * exp
 
-  type value =
-    | IntVal of int
-    | BoolVal of bool
+  type value = IntVal of int | BoolVal of bool
 
   val exp_abs : exp -> exp
   val string_of_value : value -> string
   val string_of_exp : exp -> string
 end
-
