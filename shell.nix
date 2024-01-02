@@ -10,6 +10,8 @@ pkgs.mkShell {
     ocamlPackages.ocaml-lsp
     ocamlPackages.batteries
     ocamlPackages.alcotest
+    ocamlformat
+    nil
     frameworks.Security
     frameworks.CoreFoundation
     frameworks.CoreServices
