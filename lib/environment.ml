@@ -14,6 +14,7 @@ module Environment = struct
           print_env tl
     in
     let _ = print_env ((x, v) :: env) in
+    print_string "\n";
     (x, v) :: env
 
   let rec lookup x env =
