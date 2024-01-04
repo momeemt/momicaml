@@ -5,5 +5,5 @@
 )
 (env
   (dev
-    (flags (:standard -w @A)))
+    (flags (:standard -w @A) (:standard -w -4)))
 )

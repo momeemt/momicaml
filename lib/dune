@@ -2,5 +2,6 @@
  (name momicaml))
 (env
   (dev
-    (flags (:standard -w @A)))
+    (flags (:standard -w @A) (:standard -w -70) (:standard -w -4))
+  )
 )
