@@ -19,6 +19,11 @@ module Eval = struct
         | IntVal n1, IntVal n2 -> BoolVal (n1 = n2)
         | BoolVal b1, BoolVal b2 -> BoolVal (b1 = b2)
         | _, _ -> failwith "type error")
+    | Neq (e1, e2) -> (
+        match (eval e1 env, eval e2 env) with
+        | IntVal n1, IntVal n2 -> BoolVal (n1 <> n2)
+        | BoolVal b1, BoolVal b2 -> BoolVal (b1 <> b2)
+        | _, _ -> failwith "type error")
     | Greater (e1, e2) -> (
         match (eval e1 env, eval e2 env) with
         | IntVal n1, IntVal n2 -> BoolVal (n1 > n2)

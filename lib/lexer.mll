@@ -18,6 +18,7 @@ rule token = parse
   | '='       { EQUAL }
   | '<'       { LESS }
   | '>'       { GREATER }
+  | "<>"      { NOTEQUAL }
   | ';'       { SEMICOL }
   | "::"      { COLCOL }
   | '('       { LPAREN }

@@ -8,6 +8,7 @@ type exp =
   | Fun of string * exp
   | App of exp * exp
   | Eq of exp * exp
+  | Neq of exp * exp
   | Greater of exp * exp
   | Less of exp * exp
   | Plus of exp * exp

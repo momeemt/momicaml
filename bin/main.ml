@@ -14,4 +14,7 @@ let value_to_string = function
   | BoolVal b -> string_of_bool b
   | _ -> "?"
 
-let () = run "1 + 2 * 3" |> value_to_string |> print_endline
+let () =
+  run "1 + 2 * 3" |> value_to_string |> print_endline;
+  run "3 <> 4" |> value_to_string |> print_endline;
+

@@ -8,6 +8,7 @@ type token =
   | EQUAL
   | LESS
   | GREATER
+  | NOTEQUAL
   | COLCOL
   | LPAREN
   | RPAREN
