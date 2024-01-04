@@ -1,5 +1,5 @@
-open! Ast
+open Syntax
 
 module Eval : sig
-  val eval : Ast.exp -> (string * Ast.value) list -> Ast.value
+  val eval : exp -> (string * value) list -> value
 end

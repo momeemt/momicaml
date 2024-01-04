@@ -1,13 +1,13 @@
-open! Ast
+open Syntax
 
 module Environment : sig
-  val emptyEnv : unit -> (string * 'a) list
+  val emptyEnv : unit -> (string * value) list
 
   val ext :
-    (string * Ast.value) list ->
+    (string * value) list ->
     string ->
-    Ast.value ->
-    (string * Ast.value) list
+    value ->
+    (string * value) list
 
-  val lookup : string -> (string * 'a) list -> 'a
+  val lookup : string -> (string * value) list -> value
 end
