@@ -1,4 +1,4 @@
-type exp = 
+type exp =
   | Var of string
   | IntLit of int
   | BoolLit of bool
@@ -15,18 +15,17 @@ type exp =
   | Times of exp * exp
   | Div of exp * exp
   | Empty
-  | Match of exp * ((exp * exp) list)
+  | Match of exp * (exp * exp) list
   | Cons of exp * exp
   | Head of exp
   | Tail of exp
 
-type value = 
-  | IntVal  of int
+type value =
+  | IntVal of int
   | BoolVal of bool
   | ListVal of value list
-  | FunVal  of string * exp * env
+  | FunVal of string * exp * env
   | RecFunVal of string * string * exp * env
   | RecFunVal2 of string * string * exp * env ref
-and
-  env = (string * value) list
 
+and env = (string * value) list
