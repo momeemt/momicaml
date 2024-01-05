@@ -15,5 +15,10 @@ let value_to_string = function
   | _ -> "?"
 
 let () =
-  run "let x = 1 in let f = fun y -> x + y in let x = 2 in f (x + 3)" |> value_to_string |> print_endline;
+  run "let rec f x = x in 0" |> value_to_string |> print_endline;
+  run "let rec f x = x in f 0" |> value_to_string |> print_endline;
+  run "let rec f x = if x = 0 then 1 else 2 + f (x - 1) in f 0" |> value_to_string |> print_endline;
+  run "let rec f x = if x = 0 then 1 else x * f (x - 1) in f 3" |> value_to_string |> print_endline;
+  run "let rec f x = if x = 0 then 1 else x * f (x - 1) in f 5" |> value_to_string |> print_endline;
+  run "let rec fib x = if x = 0 then 0 else if x = 1 then 1 else fib (x - 1) + fib (x - 2) in fib 10" |> value_to_string |> print_endline;
 
