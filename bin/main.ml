@@ -15,6 +15,5 @@ let value_to_string = function
   | _ -> "?"
 
 let () =
-  run "1 + 2 * 3" |> value_to_string |> print_endline;
-  run "3 <> 4" |> value_to_string |> print_endline;
+  run "let x = 1 in let f = fun y -> x + y in let x = 2 in f (x + 3)" |> value_to_string |> print_endline;
 
