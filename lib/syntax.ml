@@ -29,4 +29,4 @@ type value =
   | RecFunVal of string * string * exp * env
   | RecFunVal2 of string * string * exp * env ref
 
-and env = (string * value) list
+and env = (string, value) Hashtbl.t

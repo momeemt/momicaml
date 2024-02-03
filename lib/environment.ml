@@ -1,9 +1,11 @@
 module Environment = struct
-  let emptyEnv () = []
-  let ext env x v = (x, v) :: env
+  let emptyEnv () = Hashtbl.create 10
 
-  let rec lookup x env =
-    match env with
-    | [] -> failwith ("unbound variable: " ^ x)
-    | (y, v) :: tl -> if x = y then v else lookup x tl
+  let ext env x v =
+    Hashtbl.add env x v;
+    env
+
+  let lookup x env =
+    try Hashtbl.find env x
+    with Not_found -> failwith("unbound variable: " ^ x)
 end
