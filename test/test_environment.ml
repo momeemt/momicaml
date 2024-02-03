@@ -7,7 +7,7 @@ let test_lookup_single_item_environment () =
       (Environment.ext (Environment.emptyEnv ()) "x" (IntVal 1))
   in
   match actual with
-  | IntVal n -> Alcotest.(check int) "lookup_single" 1 n
+  | Ok (IntVal n) -> Alcotest.(check int) "lookup_single" 1 n
   | _ -> Alcotest.fail "Expected IntVal, got something else"
 
 let test_lookup_multiple_items_environment () =
@@ -21,25 +21,25 @@ let test_lookup_multiple_items_environment () =
   let actual_x = Environment.lookup "x" env in
   let actual_y = Environment.lookup "y" env in
   let actual_z = Environment.lookup "z" env in
+  let actual_w = Environment.lookup "w" env in
   let () =
     match actual_x with
-    | IntVal n -> Alcotest.(check int) "lookup_multiple" 1 n
+    | Ok (IntVal n) -> Alcotest.(check int) "lookup_multiple" 1 n
     | _ -> Alcotest.fail "Expected IntVal, got something else"
   in
   let () =
     match actual_y with
-    | BoolVal b -> Alcotest.(check bool) "lookup_multiple" true b
+    | Ok (BoolVal b) -> Alcotest.(check bool) "lookup_multiple" true b
     | _ -> Alcotest.fail "Expected BoolVal, got something else"
   in
   let () =
     match actual_z with
-    | IntVal n -> Alcotest.(check int) "lookup_multiple" 5 n
+    | Ok (IntVal n) -> Alcotest.(check int) "lookup_multiple" 5 n
     | _ -> Alcotest.fail "Expected IntVal, got something else"
   in
-  Alcotest.check_raises "lookup nonexistence variable"
-    (Failure "unbound variable: w") (fun () ->
-      let _ = Environment.lookup "w" env in
-      ())
+  match actual_w with
+  | Error _ -> ()
+  | _ -> Alcotest.fail "Expected Error, got something else"
 
 let test_lookup_duplicate_items_environment () =
   let env =
@@ -51,7 +51,7 @@ let test_lookup_duplicate_items_environment () =
   in
   let actual_x = Environment.lookup "x" env in
   match actual_x with
-  | IntVal n -> Alcotest.(check int) "lookup_duplicate" 999 n
+  | Ok (IntVal n) -> Alcotest.(check int) "lookup_duplicate" 999 n
   | _ -> Alcotest.fail "Expected IntVal, got something else"
 
 let () =
