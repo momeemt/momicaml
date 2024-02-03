@@ -1,9 +1,7 @@
-open Syntax
-
 module Environment : sig
-  val emptyEnv : unit -> (string, value) Hashtbl.t
+  val emptyEnv : unit -> (string, 'a) Hashtbl.t
 
-  val ext : (string, value) Hashtbl.t -> string -> value -> (string, value) Hashtbl.t
+  val ext : (string, 'a) Hashtbl.t -> string -> 'a -> (string, 'a) Hashtbl.t
 
-  val lookup : string -> (string, value) Hashtbl.t -> value
+  val lookup : string -> (string, 'a) Hashtbl.t -> ('a, string) result
 end

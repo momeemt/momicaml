@@ -42,7 +42,10 @@ module Eval = struct
         | BoolVal true -> eval _then env
         | BoolVal false -> eval _else env
         | _ -> failwith "type error")
-    | Var x -> Environment.lookup x env
+    | Var x ->
+        (match Environment.lookup x env with
+        | Ok v -> v
+        | Error _ -> failwith "unbound variable")
     | Let (x, e1, e2) ->
         let env1 = Environment.ext env x (eval e1 env) in
         eval e2 env1

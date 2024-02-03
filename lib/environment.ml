@@ -1,3 +1,5 @@
+open Result
+
 module Environment = struct
   let emptyEnv () = Hashtbl.create 10
 
@@ -6,6 +8,6 @@ module Environment = struct
     env
 
   let lookup x env =
-    try Hashtbl.find env x
-    with Not_found -> failwith("unbound variable: " ^ x)
+    try ok (Hashtbl.find env x)
+    with Not_found -> error ("unbound variable: " ^ x)
 end
