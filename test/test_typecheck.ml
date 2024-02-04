@@ -156,6 +156,23 @@ let test_typecheck_fn5 () =
       Alcotest.(check bool) "typecheck_fn5" true true
   | _ -> Alcotest.fail "typecheck failed"
 
+let test_typecheck_if_other_than_bool_and_int () =
+  let expr =
+    If
+      ( BoolLit true,
+        Fun ("x", Plus (Var "x", IntLit 1)),
+        Fun ("y", Times (Var "y", IntLit 2)) )
+  in
+  let env =
+    Environment.ext
+      (Environment.ext (Environment.emptyEnv ()) "x" TInt)
+      "y" TInt
+  in
+  match tcheck env expr with
+  | Ok (TArrow (TInt, TInt)) ->
+      Alcotest.(check bool) "typecheck_if_other_than_bool_and_int" true true
+  | _ -> Alcotest.fail "typecheck failed"
+
 let () =
   Alcotest.run "Momicaml.Typecheck"
     [
@@ -181,5 +198,7 @@ let () =
           Alcotest.test_case "test_typecheck_fn3" `Quick test_typecheck_fn3;
           Alcotest.test_case "test_typecheck_fn4" `Quick test_typecheck_fn4;
           Alcotest.test_case "test_typecheck_fn5" `Quick test_typecheck_fn5;
+          Alcotest.test_case "test_typecheckl_if_other_than_bool_and_int" `Quick
+            test_typecheck_if_other_than_bool_and_int;
         ] );
     ]

@@ -14,6 +14,10 @@ let rec tcheck te e =
       match (tcheck te e1, tcheck te e2) with
       | Ok TInt, Ok TInt -> ok TInt
       | _ -> error "type error in Plus")
+  | Times (e1, e2) -> (
+      match (tcheck te e1, tcheck te e2) with
+      | Ok TInt, Ok TInt -> ok TInt
+      | _ -> error "type error in Times")
   | Eq (e1, e2) -> (
       match (tcheck te e1, tcheck te e2) with
       | Ok t1, Ok t2 -> if t1 = t2 then ok TBool else error "type error in Eq"
