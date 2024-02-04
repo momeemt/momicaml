@@ -173,6 +173,42 @@ let test_typecheck_if_other_than_bool_and_int () =
       Alcotest.(check bool) "typecheck_if_other_than_bool_and_int" true true
   | _ -> Alcotest.fail "typecheck failed"
 
+let test_typecheck_let1 () =
+  let expr =
+    Fun ("x", Let ("y", Plus (Var "x", IntLit 10), Times (Var "y", IntLit 10)))
+  in
+  let env =
+    Environment.ext
+      (Environment.ext (Environment.emptyEnv ()) "y" TInt)
+      "x" TInt
+  in
+  match tcheck env expr with
+  | Ok (TArrow (TInt, TInt)) -> Alcotest.(check bool) "typecheck_let1" true true
+  | _ -> Alcotest.fail "typecheck failed"
+
+let test_typecheck_let2 () =
+  let expr =
+    Let
+      ( "x",
+        Fun ("y", Var "y"),
+        Let ("z", Fun ("w", Var "w"), App (Var "x", Var "z")) )
+  in
+  let env =
+    Environment.ext
+      (Environment.ext
+         (Environment.ext
+            (Environment.ext (Environment.emptyEnv ()) "w" TInt)
+            "z"
+            (TArrow (TInt, TInt)))
+         "y"
+         (TArrow (TInt, TInt)))
+      "x"
+      (TArrow (TArrow (TInt, TInt), TArrow (TInt, TInt)))
+  in
+  match tcheck env expr with
+  | Ok (TArrow (TInt, TInt)) -> Alcotest.(check bool) "typecheck_let2" true true
+  | _ -> Alcotest.fail "typecheck failed"
+
 let () =
   Alcotest.run "Momicaml.Typecheck"
     [
@@ -200,5 +236,7 @@ let () =
           Alcotest.test_case "test_typecheck_fn5" `Quick test_typecheck_fn5;
           Alcotest.test_case "test_typecheckl_if_other_than_bool_and_int" `Quick
             test_typecheck_if_other_than_bool_and_int;
+          Alcotest.test_case "test_typecheck_let1" `Quick test_typecheck_let1;
+          Alcotest.test_case "test_typecheck_let2" `Quick test_typecheck_let2;
         ] );
     ]

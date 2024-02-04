@@ -40,4 +40,5 @@ let rec tcheck te e =
       | Ok (TArrow (t10, t11)), Ok t2 ->
           if t10 = t2 then ok t11 else error "type error in App"
       | _ -> error "type error in App")
+  | Let (x, e1, e2) -> tcheck te (App (Fun (x, e2), e1))
   | _ -> error "unknown expression"
