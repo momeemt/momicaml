@@ -56,10 +56,9 @@ let test_eval_list_cons () =
   let result = Eval.eval expr env in
   match result with
   | ListVal lst -> (
-    match List.hd lst with
-    | IntVal i -> Alcotest.(check int) "eval list cons" 1 i
-    | _ -> Alcotest.fail "eval list cons"
-  )
+      match List.hd lst with
+      | IntVal i -> Alcotest.(check int) "eval list cons" 1 i
+      | _ -> Alcotest.fail "eval list cons")
   | _ -> Alcotest.fail "eval list cons"
 
 let test_eval_list_head () =
@@ -86,21 +85,18 @@ let test_eval_nest_int_list () =
   let result = Eval.eval expr env in
   match result with
   | ListVal lst -> (
-    (match List.hd lst with
-    | ListVal lst -> (
-      match List.hd lst with
-      | IntVal i -> Alcotest.(check int) "eval nest int list" 3 i
-      | _ -> Alcotest.fail "eval nest int list"
-    )
-    | _ -> Alcotest.fail "eval nest int list");
-    match List.hd (List.tl lst) with
-    | ListVal lst -> (
-      match List.hd lst with
-      | IntVal i -> Alcotest.(check int) "eval nest int list" 1 i
-      | _ -> Alcotest.fail "eval nest int list"
-    )
-    | _ -> Alcotest.fail "eval nest int list"
-  )
+      (match List.hd lst with
+      | ListVal lst -> (
+          match List.hd lst with
+          | IntVal i -> Alcotest.(check int) "eval nest int list" 3 i
+          | _ -> Alcotest.fail "eval nest int list")
+      | _ -> Alcotest.fail "eval nest int list");
+      match List.hd (List.tl lst) with
+      | ListVal lst -> (
+          match List.hd lst with
+          | IntVal i -> Alcotest.(check int) "eval nest int list" 1 i
+          | _ -> Alcotest.fail "eval nest int list")
+      | _ -> Alcotest.fail "eval nest int list")
   | _ -> Alcotest.fail "eval nest int list"
 
 let test_eval_eq_for_list1 () =
