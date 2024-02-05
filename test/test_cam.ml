@@ -1,4 +1,5 @@
 open Momicaml.Cam
+open Result
 
 let test_cam1 () =
   let cam =
@@ -28,7 +29,8 @@ let test_cam1 () =
       CAM.CAM_EndLet;
     ]
   in
-  let stack = CAM.eval cam [] [] in
+  let stack_res = CAM.eval (ok cam) [] [] in
+  let stack = match stack_res with Ok s -> s | Error _ -> [] in
   let res = List.hd stack in
   match res with
   | CAM.CAM_IntCal i -> Alcotest.(check int) "test_cam1" 55 i
