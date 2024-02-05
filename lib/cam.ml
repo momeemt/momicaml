@@ -1,3 +1,5 @@
+open Result
+
 module CAM = struct
   type cam_instr =
     | CAM_Ldi of int
@@ -46,49 +48,57 @@ module CAM = struct
 
   let rec inner_eval code env stack =
     match code with
-    | [] -> (code, env, stack)
-    | inst :: c -> (
+    | Ok [] -> ((ok []), env, stack)
+    | Ok (inst :: c) -> (
         match inst with
-        | CAM_Ldi n -> (c, env, CAM_IntCal n :: stack)
-        | CAM_Ldb b -> (c, env, CAM_BoolVal b :: stack)
-        | CAM_Access i -> (c, env, List.nth env i :: stack)
-        | CAM_Closure c' -> (c, env, CAM_ClosVal (c', env) :: stack)
+        | CAM_Ldi n -> (ok c, env, CAM_IntCal n :: stack)
+        | CAM_Ldb b -> (ok c, env, CAM_BoolVal b :: stack)
+        | CAM_Access i -> (ok c, env, List.nth env i :: stack)
+        | CAM_Closure c' -> (ok c, env, CAM_ClosVal (c', env) :: stack)
         | CAM_Apply -> (
             match stack with
             | CAM_ClosVal (c', env') :: v :: s ->
-                ( c',
+                ( ok c',
                   v :: CAM_ClosVal (c', env') :: env,
                   CAM_ClosVal (c, env) :: s )
-            | _ -> failwith "Type error")
+            | _ -> (error "Type error in CAM_Apply", [], []))
         | CAM_Return -> (
             match stack with
-            | v :: CAM_ClosVal (c', env') :: s -> (c', env', v :: s)
-            | _ -> failwith "Type error")
+            | v :: CAM_ClosVal (c', env') :: s -> (ok c', env', v :: s)
+            | _ -> (error "Type error in CAM_Return", [], []))
         | CAM_Let -> (
             match stack with
-            | v :: s -> (c, v :: env, s)
-            | _ -> failwith "Type error")
+            | v :: s -> (ok c, v :: env, s)
+            | _ -> (error "Type error in CAM_Let"), [], [])
         | CAM_EndLet -> (
             match env with
-            | _ :: env' -> (c, env', stack)
-            | _ -> failwith "Type error")
+            | _ :: env' -> (ok c, env', stack)
+            | _ -> (error "Type error in CAM_EndLet", [], []))
         | CAM_Test (c1, c2) -> (
             match stack with
-            | CAM_BoolVal true :: s -> (c1 @ c, env, s)
-            | CAM_BoolVal false :: s -> (c2 @ c, env, s)
-            | _ -> failwith "Type error")
+            | CAM_BoolVal true :: s -> (ok (c1 @ c), env, s)
+            | CAM_BoolVal false :: s -> (ok (c2 @ c), env, s)
+            | _ -> (error "Type error in CAM_Test"), [], [])
         | CAM_Add -> (
             match stack with
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
-                (c, env, CAM_IntCal (n1 + n2) :: s)
-            | _ -> failwith "Type error")
+                (ok c, env, CAM_IntCal (n1 + n2) :: s)
+            | _ -> (error "Type error in CAM_Add", [], []))
         | CAM_Eq -> (
             match stack with
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
-                (c, env, CAM_BoolVal (n1 = n2) :: s)
-            | _ -> failwith "Type error"))
+                (ok c, env, CAM_BoolVal (n1 = n2) :: s)
+            | _ -> (error "Type error in CAM_Eq"), [], []))
+    | Error e -> (error e, [], [])
 
   and eval code env stack =
-    let new_code, new_env, new_stack = inner_eval code env stack in
-    match new_code with [] -> new_stack | _ -> eval new_code new_env new_stack
+    match code with
+    | Ok _ -> (
+      let new_code, new_env, new_stack = inner_eval code env stack in
+      match new_code with
+      | Ok [] -> ok new_stack
+      | Ok _ -> eval new_code new_env new_stack
+      | Error e -> error e
+    )
+    | Error e -> error e
 end
