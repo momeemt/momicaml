@@ -11,11 +11,11 @@ let rec string_of_ty = function
   | TArrow (t1, t2) -> string_of_ty t1 ^ " -> " ^ string_of_ty t2
 
 let string_of_result = function
-    | Ok t -> "Ok " ^ string_of_ty t
-    | Error s -> "Error " ^ s
+  | Ok t -> "Ok " ^ string_of_ty t
+  | Error s -> "Error " ^ s
 
 let rec tcheck te e =
-  (Printf.printf "tcheck %s\n" (string_of_expr e));
+  Printf.printf "tcheck %s\n" (string_of_expr e);
   match e with
   | Var s -> Environment.lookup s te
   | IntLit _ -> ok TInt
@@ -38,8 +38,14 @@ let rec tcheck te e =
       let t2 = tcheck te e2 in
       match (t1, t2) with
       | Ok (TArrow (t10, t11)), Ok t2 ->
-          if t10 = t2 then ok t11 else error ("type error in App " ^ string_of_ty t10 ^ " " ^ string_of_ty t2)
-      | a, b -> error ("type error in App " ^ string_of_result a ^ " " ^ string_of_result b))
+          if t10 = t2 then ok t11
+          else
+            error
+              ("type error in App " ^ string_of_ty t10 ^ " " ^ string_of_ty t2)
+      | a, b ->
+          error
+            ("type error in App " ^ string_of_result a ^ " "
+           ^ string_of_result b))
   | Eq (e1, e2) -> (
       match (tcheck te e1, tcheck te e2) with
       | Ok t1, Ok t2 -> if t1 = t2 then ok TBool else error "type error in Eq"

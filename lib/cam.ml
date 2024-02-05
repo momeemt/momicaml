@@ -48,7 +48,7 @@ module CAM = struct
 
   let rec inner_eval code env stack =
     match code with
-    | Ok [] -> ((ok []), env, stack)
+    | Ok [] -> (ok [], env, stack)
     | Ok (inst :: c) -> (
         match inst with
         | CAM_Ldi n -> (ok c, env, CAM_IntCal n :: stack)
@@ -69,7 +69,7 @@ module CAM = struct
         | CAM_Let -> (
             match stack with
             | v :: s -> (ok c, v :: env, s)
-            | _ -> (error "Type error in CAM_Let"), [], [])
+            | _ -> (error "Type error in CAM_Let", [], []))
         | CAM_EndLet -> (
             match env with
             | _ :: env' -> (ok c, env', stack)
@@ -78,7 +78,7 @@ module CAM = struct
             match stack with
             | CAM_BoolVal true :: s -> (ok (c1 @ c), env, s)
             | CAM_BoolVal false :: s -> (ok (c2 @ c), env, s)
-            | _ -> (error "Type error in CAM_Test"), [], [])
+            | _ -> (error "Type error in CAM_Test", [], []))
         | CAM_Add -> (
             match stack with
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
@@ -88,17 +88,16 @@ module CAM = struct
             match stack with
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
                 (ok c, env, CAM_BoolVal (n1 = n2) :: s)
-            | _ -> (error "Type error in CAM_Eq"), [], []))
+            | _ -> (error "Type error in CAM_Eq", [], [])))
     | Error e -> (error e, [], [])
 
   and eval code env stack =
     match code with
     | Ok _ -> (
-      let new_code, new_env, new_stack = inner_eval code env stack in
-      match new_code with
-      | Ok [] -> ok new_stack
-      | Ok _ -> eval new_code new_env new_stack
-      | Error e -> error e
-    )
+        let new_code, new_env, new_stack = inner_eval code env stack in
+        match new_code with
+        | Ok [] -> ok new_stack
+        | Ok _ -> eval new_code new_env new_stack
+        | Error e -> error e)
     | Error e -> error e
 end
