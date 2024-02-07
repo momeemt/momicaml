@@ -1,12 +1,7 @@
 open Momicaml.Syntax
 open Momicaml.Typecheck
 open Momicaml.Environment
-
-let rec type_to_string = function
-  | TInt -> "int"
-  | TBool -> "bool"
-  | TArrow (t1, t2) ->
-      Printf.sprintf "(%s -> %s)" (type_to_string t1) (type_to_string t2)
+open Momicaml.Types
 
 let test_typecheck_successful () =
   let expr = If (BoolLit true, IntLit 1, IntLit 100) in

@@ -1,14 +1,13 @@
 open Syntax
 open Result
 open! Environment
-
-type ty = TInt | TBool | TArrow of ty * ty
-type tyenv = (string, ty) Hashtbl.t
+open Types
 
 let rec string_of_ty = function
   | TInt -> "int"
   | TBool -> "bool"
   | TArrow (t1, t2) -> string_of_ty t1 ^ " -> " ^ string_of_ty t2
+  | TVar s -> s
 
 let string_of_result = function
   | Ok t -> "Ok " ^ string_of_ty t

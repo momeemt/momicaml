@@ -1,7 +1,7 @@
 open Momicaml.Compiler
 open Momicaml.Cam
 open Momicaml.Environment
-open Momicaml.Typecheck
+open Momicaml.Types
 
 let test_compiler_let1 () =
   let tenv = Environment.ext (Environment.emptyEnv ()) "x" TInt in
