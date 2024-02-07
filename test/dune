@@ -1,5 +1,5 @@
 (tests
- (names test_environment test_eval test_typecheck test_cam test_compiler)
+ (names test_environment test_eval test_typecheck test_cam test_compiler test_eval_cps)
  (libraries momicaml alcotest)
 )
 (env
