@@ -73,7 +73,7 @@ module TypeInferer = struct
       te;
     te
 
-  let rec tinf te e =
+  let rec tinf_old te e =
     match e with
     | IntLit _ -> ok (te, TInt)
     | BoolLit _ -> ok (te, TBool)
@@ -86,7 +86,7 @@ module TypeInferer = struct
             let te1 = Environment.ext te s tvar in
             ok (te1, tvar))
     | Plus (e1, e2) -> (
-        match tinf te e1 with
+        match tinf_old te e1 with
         | Ok (te1, t1) -> (
             match
               match t1 with
@@ -95,7 +95,7 @@ module TypeInferer = struct
               | _ -> Error "type error in Plus"
             with
             | Ok te2 -> (
-                match tinf te2 e2 with
+                match tinf_old te2 e2 with
                 | Ok (te3, t2) -> (
                     match
                       match t2 with
@@ -109,7 +109,7 @@ module TypeInferer = struct
             | Error e -> Error e)
         | Error e -> Error e)
     | If (e1, e2, e3) -> (
-        match tinf te e1 with
+        match tinf_old te e1 with
         | Ok (te1, t1) -> (
             let te2 =
               match t1 with
@@ -119,9 +119,9 @@ module TypeInferer = struct
             in
             match te2 with
             | Ok te2 -> (
-                match tinf te2 e2 with
+                match tinf_old te2 e2 with
                 | Ok (te3, t2) -> (
-                    match tinf te3 e3 with
+                    match tinf_old te3 e3 with
                     | Ok (te4, t3) -> (
                         Printf.printf "te: %s\n" (te_to_string te);
                         Printf.printf "te1: %s\n" (te_to_string te1);
