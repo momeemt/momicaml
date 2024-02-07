@@ -6,7 +6,7 @@ open Result
 let test_eval_expr () =
   let env = Environment.ext (Environment.emptyEnv ()) "x" (IntVal 1) in
   let expr = Var "x" in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (IntVal i) -> Alcotest.(check int) "eval expr" 1 i
@@ -19,7 +19,7 @@ let test_eval_nest_expr1 () =
       "x" (IntVal 2)
   in
   let expr = Var "x" in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (IntVal i) -> Alcotest.(check int) "eval expr" 2 i
@@ -33,7 +33,7 @@ let test_eval_nest_expr2 () =
         IntLit 1,
         Let ("y", Plus (Var "x", IntLit 1), Plus (Var "x", Var "y")) )
   in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (IntVal i) -> Alcotest.(check int) "eval expr" 3 i
@@ -49,7 +49,7 @@ let test_eval_unbundling_expr () =
           ( Let ("x", IntLit 2, Plus (Var "x", IntLit 1)),
             Times (Var "x", IntLit 2) ) )
   in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (IntVal i) -> Alcotest.(check int) "eval expr" 5 i
@@ -58,7 +58,7 @@ let test_eval_unbundling_expr () =
 let test_eval_list_cons () =
   let env = Environment.emptyEnv () in
   let expr = Cons (IntLit 1, Empty) in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (ListVal lst) -> (
@@ -70,7 +70,7 @@ let test_eval_list_cons () =
 let test_eval_list_head () =
   let env = Environment.emptyEnv () in
   let expr = Head (Cons (IntLit 1, Empty)) in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (IntVal i) -> Alcotest.(check int) "eval list head" 1 i
@@ -79,7 +79,7 @@ let test_eval_list_head () =
 let test_eval_list_tail () =
   let env = Environment.emptyEnv () in
   let expr = Tail (Cons (IntLit 1, Empty)) in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (ListVal lst) -> Alcotest.(check bool) "eval list tail" true (lst = [])
@@ -90,7 +90,7 @@ let test_eval_nest_int_list () =
   let ls1 = Cons (Cons (IntLit 1, Cons (IntLit 2, Empty)), Empty) in
   let ls2 = Cons (IntLit 3, Cons (IntLit 4, Empty)) in
   let expr = Cons (ls2, ls1) in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (ListVal lst) -> (
@@ -111,7 +111,7 @@ let test_eval_nest_int_list () =
 let test_eval_eq_for_list1 () =
   let env = Environment.emptyEnv () in
   let expr = Eq (Cons (IntLit 1, Empty), Cons (IntLit 1, Empty)) in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (BoolVal b) -> Alcotest.(check bool) "eval eq for list" true b
@@ -120,7 +120,7 @@ let test_eval_eq_for_list1 () =
 let test_eval_eq_for_list2 () =
   let env = Environment.emptyEnv () in
   let expr = Eq (Cons (IntLit 1, Empty), Cons (IntLit 2, Empty)) in
-  let cont = fun result -> ok result in
+  let cont result = ok result in
   let result = EvalCPS.eval expr env cont in
   match result with
   | Ok (BoolVal b) -> Alcotest.(check bool) "eval eq for list" false b
