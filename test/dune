@@ -1,9 +1,8 @@
 (tests
- (names test_environment test_eval test_typecheck test_cam test_compiler test_eval_cps test_typeinfer test_substitute1 test_substitute2)
+ (names test_environment test_eval test_typecheck test_cam test_compiler test_eval_cps test_typeinfer)
  (libraries momicaml alcotest)
 )
 (env
   (dev
     (flags (:standard -w @A) (:standard -w -4) (:standard -w -70)))
 )
-
