@@ -1,5 +1,7 @@
-type ty = TInt | TBool | TArrow of ty * ty | TVar of string
+type tyvar = string
+type ty = TInt | TBool | TArrow of ty * ty | TVar of tyvar
 type tyenv = (string, ty) Hashtbl.t
+type tysubst = (tyvar, ty) Hashtbl.t
 
 let new_typevar s = TVar ("'" ^ s)
 

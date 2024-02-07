@@ -4,6 +4,67 @@ open Types
 open Result
 
 module TypeInferer = struct
+  let rec occurs tx t =
+    match t with
+    | TVar s -> tx = s
+    | TArrow (t1, t2) -> occurs tx t1 || occurs tx t2
+    | _ -> false
+
+  let rec subst_ty theta t =
+    match t with
+    | (TInt | TBool) as t -> t
+    | TArrow (t1, t2) -> TArrow (subst_ty theta t1, subst_ty theta t2)
+    | TVar s -> ( try Hashtbl.find theta s with Not_found -> TVar s)
+
+  let subst_tyenv theta te =
+    Hashtbl.fold
+      (fun x t acc ->
+        Hashtbl.add acc x (subst_ty theta t);
+        acc)
+      te
+      (Hashtbl.create (Hashtbl.length te))
+
+  let subst_eql theta eql =
+    List.map (fun (t1, t2) -> (subst_ty theta t1, subst_ty theta t2)) eql
+
+  let compose_subst theta2 theta1 =
+    let theta = Hashtbl.copy theta1 in
+    Hashtbl.iter
+      (fun tx t -> Hashtbl.replace theta tx (subst_ty theta2 t))
+      theta1;
+    Hashtbl.iter
+      (fun tx t -> if not (Hashtbl.mem theta tx) then Hashtbl.add theta tx t)
+      theta2;
+    theta
+
+  let unify eql =
+    let rec solve eql theta =
+      match eql with
+      | [] -> ok theta
+      | (t1, t2) :: eql2 -> (
+          if t1 = t2 then solve eql2 theta
+          else
+            match (t1, t2) with
+            | TArrow (t11, t12), TArrow (t21, t22) ->
+                solve ((t11, t21) :: (t12, t22) :: eql2) theta
+            | TVar s, _ ->
+                if occurs s t2 then error "unification failed"
+                else
+                  let theta_prime = Hashtbl.create 1 in
+                  Hashtbl.add theta_prime s t2;
+                  let theta_updated = compose_subst theta_prime theta in
+                  solve (subst_eql theta_prime eql2) theta_updated
+            | _, TVar s ->
+                if occurs s t1 then error "unification failed"
+                else
+                  let theta_prime = Hashtbl.create 1 in
+                  Hashtbl.add theta_prime s t1;
+                  let theta_updated = compose_subst theta_prime theta in
+                  solve (subst_eql theta_prime eql2) theta_updated
+            | _, _ -> error "unification failed")
+    in
+    solve eql (Hashtbl.create 10)
+
   let substitute tvar t te =
     Hashtbl.iter
       (fun x t2 ->
