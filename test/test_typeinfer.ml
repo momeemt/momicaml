@@ -62,6 +62,42 @@ let test_unify5 () =
   | Error _ -> Alcotest.(check bool) "unify5" true true
   | _ -> Alcotest.fail "unify failed"
 
+let test_tinf_top1 () =
+  let expr = (Fun("f",Fun("x",App(Var("f"),App(Var("f"),Var("x")))))) in
+  match TypeInferer.tinf_top expr with
+  | Ok _ -> Alcotest.(check bool) "tinf_top1" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top2 () =
+  let expr = (Fun("x",Fun("y",Fun("z", App(App(Var("x"),Var("z")), App(Var("y"),Var("z"))))))) in
+  match TypeInferer.tinf_top expr with
+  | Ok _ -> Alcotest.(check bool) "tinf_top2" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_if_1 () =
+  let expr = If (BoolLit true, IntLit 1, IntLit 100) in
+  match TypeInferer.tinf_top expr with
+  | Ok _ -> Alcotest.(check bool) "tinf_top_if_1" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_if_2 () =
+  let expr = If (BoolLit true, BoolLit false, BoolLit true) in
+  match TypeInferer.tinf_top expr with
+  | Ok _ -> Alcotest.(check bool) "tinf_top_if_2" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_if_3 () =
+  let expr = If (BoolLit true, Fun("x", Var("x")), Fun("x", Var("x"))) in
+  match TypeInferer.tinf_top expr with
+  | Ok _ -> Alcotest.(check bool) "tinf_top_if_3" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_if_4 () =
+  let expr = If (BoolLit true, Fun("x", Var("x")), IntLit 1) in
+  match TypeInferer.tinf_top expr with
+  | Error _ -> Alcotest.(check bool) "tinf_top_if_4" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
 let () =
   Alcotest.run "Momicaml.TypeInferer"
     [
@@ -80,5 +116,13 @@ let () =
           Alcotest.test_case "test_unify3" `Quick test_unify3;
           Alcotest.test_case "test_unify4" `Quick test_unify4;
           Alcotest.test_case "test_unify5" `Quick test_unify5;
+      ]);
+      ( "tinf_top", [
+          Alcotest.test_case "test_tinf_top1" `Quick test_tinf_top1;
+          Alcotest.test_case "test_tinf_top2" `Quick test_tinf_top2;
+          Alcotest.test_case "test_tinf_top_if_1" `Quick test_tinf_top_if_1;
+          Alcotest.test_case "test_tinf_top_if_2" `Quick test_tinf_top_if_2;
+          Alcotest.test_case "test_tinf_top_if_3" `Quick test_tinf_top_if_3;
+          Alcotest.test_case "test_tinf_top_if_4" `Quick test_tinf_top_if_4;
       ])
     ]
