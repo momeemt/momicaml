@@ -15,6 +15,7 @@ module TypeInferer = struct
     | (TInt | TBool) as t -> t
     | TArrow (t1, t2) -> TArrow (subst_ty theta t1, subst_ty theta t2)
     | TVar s -> ( try Hashtbl.find theta s with Not_found -> TVar s)
+    | TList t -> TList (subst_ty theta t)
 
   let subst_tyenv theta te =
     Hashtbl.fold
@@ -61,6 +62,7 @@ module TypeInferer = struct
                   Hashtbl.add theta_prime s t1;
                   let theta_updated = compose_subst theta_prime theta in
                   solve (subst_eql theta_prime eql2) theta_updated
+            | TList t1, TList t2 -> solve ((t1, t2) :: eql2) theta
             | _, _ -> error "unification failed")
     in
     solve eql (Hashtbl.create 10)
@@ -100,7 +102,55 @@ module TypeInferer = struct
                       compose_subst theta3 (compose_subst theta2 theta1)
                     in
                     ok (te3, TInt, theta4, n2)
-                | Error _ -> error "unification failed")
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+    | Minus (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, TInt); (t2, TInt) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TInt, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+    | Times (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, TInt); (t2, TInt) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TInt, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+    | Div (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, TInt); (t2, TInt) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TInt, theta4, n2)
+                | Error e -> error e)
             | Error e -> Error e)
         | Error e -> Error e)
     | If (e1, e2, e3) -> (
@@ -119,7 +169,7 @@ module TypeInferer = struct
                             (compose_subst theta3 (compose_subst theta2 theta1))
                         in
                         ok (te4, t2, theta5, n3)
-                    | Error _ -> error "unification failed")
+                    | Error e -> error e)
                 | Error e -> Error e)
             | Error e -> Error e)
         | Error e -> Error e)
@@ -147,10 +197,174 @@ module TypeInferer = struct
                       compose_subst theta3 (compose_subst theta2 theta1)
                     in
                     ok (te3, t3, theta4, n3)
-                | Error _ -> error "unification failed")
+                | Error e -> error e)
             | Error e -> Error e)
         | Error e -> Error e)
-    | _ -> failwith "unknown expression"
+    | Let (x, e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) ->
+            let te2 = Environment.ext te1 x t1 in (
+            match tinf te2 e2 n1 with
+            | Ok (te3, t2, theta2, n3) ->
+                let theta3 = compose_subst theta2 theta1 in
+                ok (te3, t2, theta3, n3)
+            | Error e -> error e)
+        | Error e -> error e
+    )
+    | LetRec (f, x, e1, e2) -> (
+      let arg_type, n1 = new_typevar n in
+      let return_type, n2 = new_typevar n1 in
+      let fun_type = TArrow (arg_type, return_type) in
+      let te1 = Environment.ext te f fun_type in
+      let te2 = Environment.ext te1 x arg_type in (
+      match tinf te2 e1 n2 with
+      | Ok (te3, t1, _, n3) -> (
+          match unify [(return_type, t1)] with
+          | Ok theta2 -> 
+            let te4 = subst_tyenv theta2 te3 in (
+            match tinf te4 e2 n3 with
+            | Ok (te5, t2, theta3, n4) ->
+                let theta4 = compose_subst theta3 theta2 in
+                ok (te5, t2, theta4, n4)
+            | Error e -> Error e)
+          | Error e -> Error e)
+      | Error e -> Error e)
+    )
+    | Empty -> (
+      let tvar, n1 = new_typevar n in
+      ok (te, TList tvar, theta0, n1)
+    )
+    | Cons (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t2, TList t11) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TList t11, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+    | Head e -> (
+        match tinf te e n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match t1 with
+            | TList t2 -> ok (te1, t2, theta1, n1)
+            | TVar s ->
+                let t2, n2 = new_typevar n1 in
+                let theta2 = Hashtbl.create 1 in
+                Hashtbl.add theta2 s (TList t2);
+                let theta3 = compose_subst theta2 theta1 in
+                ok (subst_tyenv theta2 te1, t2, theta3, n2)
+            | _ -> error "type error in Head")
+        | Error e -> Error e)
+    | Tail e -> (
+        match tinf te e n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match t1 with
+            | TList t2 -> ok (te1, TList t2, theta1, n1)
+            | TVar s ->
+                let t2, n2 = new_typevar n1 in
+                let theta2 = Hashtbl.create 1 in
+                Hashtbl.add theta2 s (TList t2);
+                let theta3 = compose_subst theta2 theta1 in
+                ok (subst_tyenv theta2 te1, TList t2, theta3, n2)
+            | _ -> error "type error in Tail")
+        | Error e -> Error e)
+     | Eq (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, t2) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TBool, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+      | Neq (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, t2) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TBool, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+      | Greater (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, t2) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TBool, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+      | Less (e1, e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+            match tinf te1 e2 n1 with
+            | Ok (te2, t2, theta2, n2) -> (
+                let t11 = subst_ty theta2 t1 in
+                match unify [ (t11, t2) ] with
+                | Ok theta3 ->
+                    let te3 = subst_tyenv theta3 te2 in
+                    let theta4 =
+                      compose_subst theta3 (compose_subst theta2 theta1)
+                    in
+                    ok (te3, TBool, theta4, n2)
+                | Error e -> error e)
+            | Error e -> Error e)
+        | Error e -> Error e)
+      | Match (e, (elist: (exp * exp) list)) -> (
+        match tinf te e n with
+        | Ok (te1, t1, theta1, n1) -> (
+            let t2, n2 = new_typevar n1 in
+            let rec tinf_match te elist theta n =
+              match elist with
+              | [] -> ok (te, t2, theta, n)
+              | (e1, e2) :: elist2 -> (
+                  match tinf te e1 n with
+                  | Ok (te1, t3, theta2, n2) -> (
+                      match tinf te1 e2 n2 with
+                      | Ok (te2, t4, theta3, n3) -> (
+                          let theta4 = compose_subst theta3 theta2 in
+                          let theta5 = compose_subst theta4 theta in
+                          match unify [ (t3, t1); (t4, t2) ] with
+                          | Ok theta6 ->
+                              let theta_final = compose_subst theta6 theta5 in
+                              let te_final = subst_tyenv theta_final te2 in
+                              tinf_match te_final elist2 theta_final n3
+                          | Error e -> error e)
+                      | Error e -> Error e)
+                  | Error e -> Error e)
+            in
+            tinf_match te1 elist theta1 n2)
+        | Error e -> Error e)
 
   let tinf_top e = tinf (Environment.emptyEnv ()) e 0
 

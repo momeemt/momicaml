@@ -8,6 +8,7 @@ let rec string_of_ty = function
   | TBool -> "bool"
   | TArrow (t1, t2) -> string_of_ty t1 ^ " -> " ^ string_of_ty t2
   | TVar s -> s
+  | TList t -> "List(" ^ string_of_ty t ^ ")"
 
 let string_of_result = function
   | Ok t -> "Ok " ^ string_of_ty t
