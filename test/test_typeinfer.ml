@@ -63,13 +63,19 @@ let test_unify5 () =
   | _ -> Alcotest.fail "unify failed"
 
 let test_tinf_top1 () =
-  let expr = (Fun("f",Fun("x",App(Var("f"),App(Var("f"),Var("x")))))) in
+  let expr = Fun ("f", Fun ("x", App (Var "f", App (Var "f", Var "x")))) in
   match TypeInferer.tinf_top expr with
   | Ok _ -> Alcotest.(check bool) "tinf_top1" true true
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top2 () =
-  let expr = (Fun("x",Fun("y",Fun("z", App(App(Var("x"),Var("z")), App(Var("y"),Var("z"))))))) in
+  let expr =
+    Fun
+      ( "x",
+        Fun
+          ("y", Fun ("z", App (App (Var "x", Var "z"), App (Var "y", Var "z"))))
+      )
+  in
   match TypeInferer.tinf_top expr with
   | Ok _ -> Alcotest.(check bool) "tinf_top2" true true
   | _ -> Alcotest.fail "typeinfer failed"
@@ -87,13 +93,13 @@ let test_tinf_top_if_2 () =
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top_if_3 () =
-  let expr = If (BoolLit true, Fun("x", Var("x")), Fun("x", Var("x"))) in
+  let expr = If (BoolLit true, Fun ("x", Var "x"), Fun ("x", Var "x")) in
   match TypeInferer.tinf_top expr with
   | Ok _ -> Alcotest.(check bool) "tinf_top_if_3" true true
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top_if_4 () =
-  let expr = If (BoolLit true, Fun("x", Var("x")), IntLit 1) in
+  let expr = If (BoolLit true, Fun ("x", Var "x"), IntLit 1) in
   match TypeInferer.tinf_top expr with
   | Error _ -> Alcotest.(check bool) "tinf_top_if_4" true true
   | _ -> Alcotest.fail "typeinfer failed"
@@ -110,19 +116,21 @@ let () =
           Alcotest.test_case "test_typeinfer_failed" `Quick
             test_typeinfer_failed;
         ] );
-      ( "unify", [
+      ( "unify",
+        [
           Alcotest.test_case "test_unify1" `Quick test_unify1;
           Alcotest.test_case "test_unify2" `Quick test_unify2;
           Alcotest.test_case "test_unify3" `Quick test_unify3;
           Alcotest.test_case "test_unify4" `Quick test_unify4;
           Alcotest.test_case "test_unify5" `Quick test_unify5;
-      ]);
-      ( "tinf_top", [
+        ] );
+      ( "tinf_top",
+        [
           Alcotest.test_case "test_tinf_top1" `Quick test_tinf_top1;
           Alcotest.test_case "test_tinf_top2" `Quick test_tinf_top2;
           Alcotest.test_case "test_tinf_top_if_1" `Quick test_tinf_top_if_1;
           Alcotest.test_case "test_tinf_top_if_2" `Quick test_tinf_top_if_2;
           Alcotest.test_case "test_tinf_top_if_3" `Quick test_tinf_top_if_3;
           Alcotest.test_case "test_tinf_top_if_4" `Quick test_tinf_top_if_4;
-      ])
+        ] );
     ]
