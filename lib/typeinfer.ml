@@ -202,38 +202,35 @@ module TypeInferer = struct
         | Error e -> Error e)
     | Let (x, e1, e2) -> (
         match tinf te e1 n with
-        | Ok (te1, t1, theta1, n1) ->
-            let te2 = Environment.ext te1 x t1 in (
+        | Ok (te1, t1, theta1, n1) -> (
+            let te2 = Environment.ext te1 x t1 in
             match tinf te2 e2 n1 with
             | Ok (te3, t2, theta2, n3) ->
                 let theta3 = compose_subst theta2 theta1 in
                 ok (te3, t2, theta3, n3)
             | Error e -> error e)
-        | Error e -> error e
-    )
+        | Error e -> error e)
     | LetRec (f, x, e1, e2) -> (
-      let arg_type, n1 = new_typevar n in
-      let return_type, n2 = new_typevar n1 in
-      let fun_type = TArrow (arg_type, return_type) in
-      let te1 = Environment.ext te f fun_type in
-      let te2 = Environment.ext te1 x arg_type in (
-      match tinf te2 e1 n2 with
-      | Ok (te3, t1, _, n3) -> (
-          match unify [(return_type, t1)] with
-          | Ok theta2 -> 
-            let te4 = subst_tyenv theta2 te3 in (
-            match tinf te4 e2 n3 with
-            | Ok (te5, t2, theta3, n4) ->
-                let theta4 = compose_subst theta3 theta2 in
-                ok (te5, t2, theta4, n4)
+        let arg_type, n1 = new_typevar n in
+        let return_type, n2 = new_typevar n1 in
+        let fun_type = TArrow (arg_type, return_type) in
+        let te1 = Environment.ext te f fun_type in
+        let te2 = Environment.ext te1 x arg_type in
+        match tinf te2 e1 n2 with
+        | Ok (te3, t1, _, n3) -> (
+            match unify [ (return_type, t1) ] with
+            | Ok theta2 -> (
+                let te4 = subst_tyenv theta2 te3 in
+                match tinf te4 e2 n3 with
+                | Ok (te5, t2, theta3, n4) ->
+                    let theta4 = compose_subst theta3 theta2 in
+                    ok (te5, t2, theta4, n4)
+                | Error e -> Error e)
             | Error e -> Error e)
-          | Error e -> Error e)
-      | Error e -> Error e)
-    )
-    | Empty -> (
-      let tvar, n1 = new_typevar n in
-      ok (te, TList tvar, theta0, n1)
-    )
+        | Error e -> Error e)
+    | Empty ->
+        let tvar, n1 = new_typevar n in
+        ok (te, TList tvar, theta0, n1)
     | Cons (e1, e2) -> (
         match tinf te e1 n with
         | Ok (te1, t1, theta1, n1) -> (
@@ -276,7 +273,7 @@ module TypeInferer = struct
                 ok (subst_tyenv theta2 te1, TList t2, theta3, n2)
             | _ -> error "type error in Tail")
         | Error e -> Error e)
-     | Eq (e1, e2) -> (
+    | Eq (e1, e2) -> (
         match tinf te e1 n with
         | Ok (te1, t1, theta1, n1) -> (
             match tinf te1 e2 n1 with
@@ -292,7 +289,7 @@ module TypeInferer = struct
                 | Error e -> error e)
             | Error e -> Error e)
         | Error e -> Error e)
-      | Neq (e1, e2) -> (
+    | Neq (e1, e2) -> (
         match tinf te e1 n with
         | Ok (te1, t1, theta1, n1) -> (
             match tinf te1 e2 n1 with
@@ -308,7 +305,7 @@ module TypeInferer = struct
                 | Error e -> error e)
             | Error e -> Error e)
         | Error e -> Error e)
-      | Greater (e1, e2) -> (
+    | Greater (e1, e2) -> (
         match tinf te e1 n with
         | Ok (te1, t1, theta1, n1) -> (
             match tinf te1 e2 n1 with
@@ -324,7 +321,7 @@ module TypeInferer = struct
                 | Error e -> error e)
             | Error e -> Error e)
         | Error e -> Error e)
-      | Less (e1, e2) -> (
+    | Less (e1, e2) -> (
         match tinf te e1 n with
         | Ok (te1, t1, theta1, n1) -> (
             match tinf te1 e2 n1 with
@@ -340,9 +337,9 @@ module TypeInferer = struct
                 | Error e -> error e)
             | Error e -> Error e)
         | Error e -> Error e)
-      | Match (e, (elist: (exp * exp) list)) -> (
+    | Match (e, (elist : (exp * exp) list)) -> (
         match tinf te e n with
-        | Ok (te1, t1, theta1, n1) -> (
+        | Ok (te1, t1, theta1, n1) ->
             let t2, n2 = new_typevar n1 in
             let rec tinf_match te elist theta n =
               match elist with
@@ -363,7 +360,7 @@ module TypeInferer = struct
                       | Error e -> Error e)
                   | Error e -> Error e)
             in
-            tinf_match te1 elist theta1 n2)
+            tinf_match te1 elist theta1 n2
         | Error e -> Error e)
 
   let tinf_top e = tinf (Environment.emptyEnv ()) e 0
