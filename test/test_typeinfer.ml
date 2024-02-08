@@ -65,7 +65,8 @@ let test_unify5 () =
 let test_tinf_top1 () =
   let expr = Fun ("f", Fun ("x", App (Var "f", App (Var "f", Var "x")))) in
   match TypeInferer.tinf_top expr with
-  | Ok _ -> Alcotest.(check bool) "tinf_top1" true true
+  | Ok (_, t, _, _) ->
+      Alcotest.(check string) (ty_to_string t) "TVar('a3) -> TVar('a3) -> TVar('a3) -> TVar('a3)" (ty_to_string t)
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top2 () =
@@ -77,31 +78,98 @@ let test_tinf_top2 () =
       )
   in
   match TypeInferer.tinf_top expr with
-  | Ok _ -> Alcotest.(check bool) "tinf_top2" true true
+  | Ok (_, t, _, _) ->
+      Alcotest.(check string) (ty_to_string t) "TVar('a2) -> TVar('a4) -> TVar('a5) -> TVar('a2) -> TVar('a4) -> TVar('a2) -> TVar('a5)" (ty_to_string t)
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top_if_1 () =
   let expr = If (BoolLit true, IntLit 1, IntLit 100) in
   match TypeInferer.tinf_top expr with
-  | Ok _ -> Alcotest.(check bool) "tinf_top_if_1" true true
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "int" (ty_to_string t)
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top_if_2 () =
   let expr = If (BoolLit true, BoolLit false, BoolLit true) in
   match TypeInferer.tinf_top expr with
-  | Ok _ -> Alcotest.(check bool) "tinf_top_if_2" true true
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "bool" (ty_to_string t)
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top_if_3 () =
   let expr = If (BoolLit true, Fun ("x", Var "x"), Fun ("x", Var "x")) in
   match TypeInferer.tinf_top expr with
-  | Ok _ -> Alcotest.(check bool) "tinf_top_if_3" true true
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "TVar('a0) -> TVar('a0)" (ty_to_string t)
   | _ -> Alcotest.fail "typeinfer failed"
 
 let test_tinf_top_if_4 () =
   let expr = If (BoolLit true, Fun ("x", Var "x"), IntLit 1) in
   match TypeInferer.tinf_top expr with
   | Error _ -> Alcotest.(check bool) "tinf_top_if_4" true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_let1 () =
+  let expr = Let ("x", IntLit 1, Var "x") in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "int" (ty_to_string t)
+  | _ -> Alcotest.fail "typeinfer failed"  
+
+let test_tinf_top_let2 () =
+  let expr = Let ("x", Fun ("x", Var "x"), Var "x") in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "TVar('a0) -> TVar('a0)" (ty_to_string t)
+  | _ -> Alcotest.fail "typeinfer failed"
+  
+let test_tinf_top_letrec1 () =
+  let expr = LetRec ("f", "x", App (Var "f", Var "x"), Var "f") in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "TVar('a0) -> TVar('a2)" (ty_to_string t)
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_list () =
+  let expr = Let ("x", Empty, Var "x") in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "List(TVar('a0))" (ty_to_string t)
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_list_cons () =
+  let expr = Let ("x", Cons (IntLit 1, Empty), Var "x") in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "List(int)" (ty_to_string t)
+  | Error e -> Alcotest.fail e
+
+let test_tinf_top_list_head () =
+  let expr = Let ("x", Cons (IntLit 1, Empty), Head (Var "x")) in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "int" (ty_to_string t)
+  | Error e -> Alcotest.fail e
+
+let test_tinf_top_list_tail () =
+  let expr = Let ("x", Cons (IntLit 1, Empty), Tail (Var "x")) in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "List(int)" (ty_to_string t)
+  | Error e -> Alcotest.fail e
+
+let test_tinf_top_eq () =
+  let expr = Let ("x", IntLit 1, Eq (Var "x", IntLit 1)) in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "bool" (ty_to_string t)
+  | Error e -> Alcotest.fail e
+
+let test_tinf_top_eq_error () =
+  let expr = Let ("x", IntLit 1, Eq (Var "x", BoolLit true)) in
+  match TypeInferer.tinf_top expr with
+  | Error e -> Alcotest.(check bool) e true true
+  | _ -> Alcotest.fail "typeinfer failed"
+
+let test_tinf_top_neq () =
+  let expr = Let ("x", IntLit 1, Neq (Var "x", IntLit 1)) in
+  match TypeInferer.tinf_top expr with
+  | Ok (_, t, _, _) -> Alcotest.(check string) (ty_to_string t) "bool" (ty_to_string t)
+  | Error e -> Alcotest.fail e
+
+let test_tinf_top_neq_error () =
+  let expr = Let ("x", IntLit 1, Neq (Var "x", BoolLit true)) in
+  match TypeInferer.tinf_top expr with
+  | Error e -> Alcotest.(check bool) e true true
   | _ -> Alcotest.fail "typeinfer failed"
 
 let () =
@@ -132,5 +200,16 @@ let () =
           Alcotest.test_case "test_tinf_top_if_2" `Quick test_tinf_top_if_2;
           Alcotest.test_case "test_tinf_top_if_3" `Quick test_tinf_top_if_3;
           Alcotest.test_case "test_tinf_top_if_4" `Quick test_tinf_top_if_4;
+          Alcotest.test_case "test_tinf_top_let1" `Quick test_tinf_top_let1;
+          Alcotest.test_case "test_tinf_top_let2" `Quick test_tinf_top_let2;
+          Alcotest.test_case "test_tinf_top_letrec1" `Quick test_tinf_top_letrec1;
+          Alcotest.test_case "test_tinf_top_list" `Quick test_tinf_top_list;
+          Alcotest.test_case "test_tinf_top_list_cons" `Quick test_tinf_top_list_cons;
+          Alcotest.test_case "test_tinf_top_list_head" `Quick test_tinf_top_list_head;
+          Alcotest.test_case "test_tinf_top_list_tail" `Quick test_tinf_top_list_tail;
+          Alcotest.test_case "test_tinf_top_eq" `Quick test_tinf_top_eq;
+          Alcotest.test_case "test_tinf_top_eq_error" `Quick test_tinf_top_eq_error;
+          Alcotest.test_case "test_tinf_top_neq" `Quick test_tinf_top_neq;
+          Alcotest.test_case "test_tinf_top_neq_error" `Quick test_tinf_top_neq_error;
         ] );
     ]
