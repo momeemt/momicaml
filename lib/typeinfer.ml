@@ -73,6 +73,100 @@ module TypeInferer = struct
       te;
     te
 
+  let theta0 = Hashtbl.create 10
+
+  let new_typevar n =
+    (TVar ("'a" ^ (string_of_int n)), n+1)
+  
+  let rec tinf te e n =
+    match e with
+      | Var(s) ->
+        (
+          match Environment.lookup s te with
+          | Ok t -> ok (te, t, theta0, n)
+          | Error _ ->
+            let (tx,n1) = new_typevar n in
+            let te1 = Environment.ext te s tx in
+            ok (te1, tx, theta0, n1)
+        )
+      | IntLit(_)   -> ok (te, TInt, theta0, n)
+      | BoolLit(_)  -> ok (te, TBool, theta0, n)
+      | Plus(e1,e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+          match tinf te1 e2 n1 with
+          | Ok (te2, t2, theta2, n2) -> (
+            let t11 = subst_ty theta2 t1 in
+            match unify [(t11,TInt); (t2,TInt)] with
+            | Ok theta3 -> 
+              let te3 = subst_tyenv theta3 te2 in
+              let theta4 = compose_subst theta3 
+                            (compose_subst theta2 theta1) in
+              ok (te3, TInt, theta4, n2)
+            | Error _ -> error "unification failed"
+          )
+          | Error e -> Error e
+        )
+        | Error e -> Error e
+      )
+      | If(e1,e2,e3) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+          match tinf te1 e2 n1 with
+          | Ok (te2, t2, theta2, n2) -> (
+            match tinf te2 e3 n2 with
+            | Ok (te3, t3, theta3, n3) -> (
+              let t11 = subst_ty theta3 t1 in
+              match unify [(t11,TBool); (t2,t3)] with
+              | Ok theta4 -> 
+                let te4 = subst_tyenv theta4 te3 in
+                let theta5 = compose_subst theta4 
+                              (compose_subst theta3 
+                                (compose_subst theta2 theta1)) in
+                ok (te4, t2, theta5, n3)
+              | Error _ -> error "unification failed"
+            )
+            | Error e -> Error e
+          )
+          | Error e -> Error e
+        )
+        | Error e -> Error e
+      )
+      | Fun(x,e) -> (
+        let (tx,n1) = new_typevar n in
+        let te1 = Environment.ext te x tx in
+        match tinf te1 e n1 with
+        | Ok (te2, t1, theta1, n2) -> 
+          let t2 = subst_ty theta1 tx in
+          Hashtbl.remove te2 x;
+          ok (te2, TArrow(t2, t1), theta1, n2)
+        | Error e -> Error e
+      )
+      | App(e1,e2) -> (
+        match tinf te e1 n with
+        | Ok (te1, t1, theta1, n1) -> (
+          match tinf te1 e2 n1 with
+          | Ok (te2, t2, theta2, n2) -> (
+            let (tx,n3) = new_typevar n2 in
+            let t11 = subst_ty theta2 t1 in
+            match unify [(t11,TArrow(t2,tx))] with
+            | Ok theta3 -> 
+              let t3 = subst_ty theta3 tx in
+              let te3 = subst_tyenv theta3 te2 in
+              let theta4 = compose_subst theta3 
+                            (compose_subst theta2 theta1) in
+              ok (te3, t3, theta4, n3)
+            | Error _ -> error "unification failed"
+          )
+          | Error e -> Error e
+        )
+        | Error e -> Error e
+      )
+      | _ -> failwith "unknown expression"
+
+  
+  let tinf_top e = tinf (Environment.emptyEnv()) e 0
+  
   let rec tinf_old te e =
     match e with
     | IntLit _ -> ok (te, TInt)
@@ -82,7 +176,7 @@ module TypeInferer = struct
         match tvar with
         | Ok t -> ok (te, t)
         | Error _ ->
-            let tvar = new_typevar s in
+            let tvar = Types.new_typevar s in
             let te1 = Environment.ext te s tvar in
             ok (te1, tvar))
     | Plus (e1, e2) -> (
