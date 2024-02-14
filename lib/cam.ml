@@ -31,15 +31,15 @@ module CAM = struct
     String.concat " "
       (List.map
          (function
-           | CAM_Ldi n -> "Ldi " ^ string_of_int n
-           | CAM_Ldb b -> "Ldb " ^ string_of_bool b
-           | CAM_Access i -> "Access " ^ string_of_int i
-           | CAM_Closure c -> "Closure " ^ string_of_code c
+           | CAM_Ldi n -> "Ldi(" ^ string_of_int n ^ ")"
+           | CAM_Ldb b -> "Ldb(" ^ string_of_bool b ^ ")"
+           | CAM_Access i -> "Access(" ^ string_of_int i ^ ")"
+           | CAM_Closure c -> "Closure (" ^ string_of_code c ^ ")"
            | CAM_Apply -> "Apply"
            | CAM_Return -> "Return"
-           | CAM_Let -> "Let"
-           | CAM_EndLet -> "EndLet"
-           | CAM_Test (a, b) -> "Test " ^ string_of_code a ^ " " ^ string_of_code b
+           | CAM_Let -> "Let ("
+           | CAM_EndLet -> ") EndLet"
+           | CAM_Test (a, b) -> "Test (" ^ string_of_code a ^ ", " ^ string_of_code b ^ ")"
            | CAM_Add -> "Add"
             | CAM_Sub -> "Sub"
             | CAM_Mult -> "Mult"
