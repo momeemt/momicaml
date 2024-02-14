@@ -415,33 +415,23 @@ module TypeInferer = struct
                 | Ok (te3, t2) -> (
                     match tinf_old te3 e3 with
                     | Ok (te4, t3) -> (
-                        Printf.printf "te: %s\n" (te_to_string te);
-                        Printf.printf "te1: %s\n" (te_to_string te1);
-                        Printf.printf "te2: %s\n" (te_to_string te2);
-                        Printf.printf "te3: %s\n" (te_to_string te3);
-                        Printf.printf "te4: %s\n" (te_to_string te4);
                         match (t2, t3) with
                         | TInt, TInt -> ok (te4, TInt)
                         | TBool, TBool -> ok (te4, TBool)
                         | TInt, TVar _ ->
                             let te5 = substitute t3 TInt te4 in
-                            Printf.printf "te5: %s\n" (te_to_string te5);
                             ok (te5, TInt)
                         | TVar _, TInt ->
                             let te5 = substitute t2 TInt te4 in
-                            Printf.printf "te5: %s\n" (te_to_string te5);
                             ok (te5, TInt)
                         | TBool, TVar _ ->
                             let te5 = substitute t3 TBool te4 in
-                            Printf.printf "te5: %s\n" (te_to_string te5);
                             ok (te5, TBool)
                         | TVar _, TBool ->
                             let te5 = substitute t2 TBool te4 in
-                            Printf.printf "te5: %s\n" (te_to_string te5);
                             ok (te5, TBool)
                         | TVar _, TVar _ ->
                             let te5 = substitute t2 t3 te4 in
-                            Printf.printf "te5: %s\n" (te_to_string te5);
                             ok (te5, t3)
                         | _ -> failwith "type error in If")
                     | Error e -> Error e)

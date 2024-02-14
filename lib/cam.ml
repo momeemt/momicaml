@@ -12,6 +12,9 @@ module CAM = struct
     | CAM_EndLet
     | CAM_Test of cam_code * cam_code
     | CAM_Add
+    | CAM_Sub
+    | CAM_Mult
+    | CAM_Div
     | CAM_Eq
 
   and cam_code = cam_instr list
@@ -24,20 +27,23 @@ module CAM = struct
   and cam_stack = cam_value list
   and cam_env = cam_value list
 
-  let string_of_code code =
+  let rec string_of_code code =
     String.concat " "
       (List.map
          (function
            | CAM_Ldi n -> "Ldi " ^ string_of_int n
            | CAM_Ldb b -> "Ldb " ^ string_of_bool b
            | CAM_Access i -> "Access " ^ string_of_int i
-           | CAM_Closure _ -> "Closure"
+           | CAM_Closure c -> "Closure " ^ string_of_code c
            | CAM_Apply -> "Apply"
            | CAM_Return -> "Return"
            | CAM_Let -> "Let"
            | CAM_EndLet -> "EndLet"
-           | CAM_Test _ -> "Test"
+           | CAM_Test (a, b) -> "Test " ^ string_of_code a ^ " " ^ string_of_code b
            | CAM_Add -> "Add"
+            | CAM_Sub -> "Sub"
+            | CAM_Mult -> "Mult"
+            | CAM_Div -> "Div"
            | CAM_Eq -> "Eq")
          code)
 
@@ -84,6 +90,22 @@ module CAM = struct
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
                 (ok c, env, CAM_IntCal (n1 + n2) :: s)
             | _ -> (error "Type error in CAM_Add", [], []))
+        | CAM_Sub -> (
+            match stack with
+            | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
+                (ok c, env, CAM_IntCal (n1 - n2) :: s)
+            | _ -> (error "Type error in CAM_Sub", [], []))
+        | CAM_Mult -> (
+            match stack with
+            | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
+                (ok c, env, CAM_IntCal (n1 * n2) :: s)
+            | _ -> (error "Type error in CAM_Mult", [], []))
+        | CAM_Div -> (
+            match stack with
+            | CAM_IntCal _ :: CAM_IntCal 0 :: _ -> (error "Division by zero", [], [])
+            | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
+                (ok c, env, CAM_IntCal (n1 / n2) :: s)
+            | _ -> (error "Type error in CAM_Div", [], []))
         | CAM_Eq -> (
             match stack with
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->

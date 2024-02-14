@@ -15,7 +15,6 @@ let string_of_result = function
   | Error s -> "Error " ^ s
 
 let rec tcheck te e =
-  Printf.printf "tcheck %s\n" (string_of_expr e);
   match e with
   | Var s -> Environment.lookup s te
   | IntLit _ -> ok TInt
@@ -26,7 +25,6 @@ let rec tcheck te e =
           if t2 = t3 then ok t2 else error "type error in If"
       | _ -> error "type error in If")
   | Let (x, e1, e2) -> tcheck te (App (Fun (x, e2), e1))
-  (* | LetRec *)
   | Fun (x, e1) -> (
       let t1 = Environment.lookup x te in
       let t2 = tcheck te e1 in
@@ -79,4 +77,4 @@ let rec tcheck te e =
       match (tcheck te e1, tcheck te e2) with
       | Ok TInt, Ok TInt -> ok TInt
       | _ -> error "type error in Div")
-  | _ -> error "unknown expression"
+  | _ -> error "Typecheck Error"
