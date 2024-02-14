@@ -14,7 +14,7 @@ module Codegen = struct
     | Ok (Fun (x, e)) -> (
         let res = cam_codegen (ok e) (x :: "_" :: venv) in
         match res with
-        | Ok code -> ok (CAM.CAM_Closure code :: [ CAM.CAM_Return ])
+        | Ok code -> ok ([CAM.CAM_Closure (code @ [ CAM.CAM_Return ])])
         | Error e -> Error e)
     | Ok (App (e1, e2)) -> (
         let res1 = cam_codegen (ok e2) venv in
@@ -43,7 +43,7 @@ module Codegen = struct
             match res2 with
             | Ok code2 ->
                 ok
-                  ([ CAM.CAM_Closure code1; CAM.CAM_Return ]
+                  ([CAM.CAM_Closure (code1 @ [CAM.CAM_Return])]
                   @ [ CAM.CAM_Let ] @ code2 @ [ CAM.CAM_EndLet ])
             | Error e -> Error e)
         | Error e -> Error e)
