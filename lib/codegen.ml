@@ -64,40 +64,36 @@ module Codegen = struct
     | Ok (BoolLit b) -> ok [ CAM.CAM_Ldb b ]
     | Ok (Plus (e1, e2)) -> (
         let res1 = cam_codegen (ok e2) venv in
-        match res1 with
-        | Ok code1 -> (
-            let res2 = cam_codegen (ok e1) venv in
-            match res2 with
-            | Ok code2 -> ok (code1 @ code2 @ [ CAM.CAM_Add ])
-            | Error e -> Error e)
-        | Error e -> Error e)
+        let res2 = cam_codegen (ok e1) venv in
+        match (res1, res2) with
+        | (Ok [CAM.CAM_Ldi i1], Ok [CAM.CAM_Ldi i2]) -> ok [CAM.CAM_Ldi (i1 + i2)]
+        | (Ok code1, Ok code2) -> ok (code1 @ code2 @ [CAM.CAM_Add])
+        | (Error e, _) | (_, Error e) -> error e
+    )
     | Ok (Minus (e1, e2)) -> (
         let res1 = cam_codegen (ok e2) venv in
-        match res1 with
-        | Ok code1 -> (
-            let res2 = cam_codegen (ok e1) venv in
-            match res2 with
-            | Ok code2 -> ok (code1 @ code2 @ [ CAM.CAM_Sub ])
-            | Error e -> Error e)
-        | Error e -> Error e)
+        let res2 = cam_codegen (ok e1) venv in
+        match (res1, res2) with
+        | (Ok [CAM.CAM_Ldi i1], Ok [CAM.CAM_Ldi i2]) -> ok [CAM.CAM_Ldi (i1 - i2)]
+        | (Ok code1, Ok code2) -> ok (code1 @ code2 @ [CAM.CAM_Sub])
+        | (Error e, _) | (_, Error e) -> error e
+    )
     | Ok (Times (e1, e2)) -> (
         let res1 = cam_codegen (ok e2) venv in
-        match res1 with
-        | Ok code1 -> (
-            let res2 = cam_codegen (ok e1) venv in
-            match res2 with
-            | Ok code2 -> ok (code1 @ code2 @ [ CAM.CAM_Mult ])
-            | Error e -> Error e)
-        | Error e -> Error e)
+        let res2 = cam_codegen (ok e1) venv in
+        match (res1, res2) with
+        | (Ok [CAM.CAM_Ldi i1], Ok [CAM.CAM_Ldi i2]) -> ok [CAM.CAM_Ldi (i1 * i2)]
+        | (Ok code1, Ok code2) -> ok (code1 @ code2 @ [CAM.CAM_Mult])
+        | (Error e, _) | (_, Error e) -> error e
+    )
     | Ok (Div (e1, e2)) -> (
         let res1 = cam_codegen (ok e2) venv in
-        match res1 with
-        | Ok code1 -> (
-            let res2 = cam_codegen (ok e1) venv in
-            match res2 with
-            | Ok code2 -> ok (code1 @ code2 @ [ CAM.CAM_Div ])
-            | Error e -> Error e)
-        | Error e -> Error e)
+        let res2 = cam_codegen (ok e1) venv in
+        match (res1, res2) with
+        | (Ok [CAM.CAM_Ldi i1], Ok [CAM.CAM_Ldi i2]) when i1 != 0 -> ok [CAM.CAM_Ldi (i1 / i2)]
+        | (Ok code1, Ok code2) -> ok (code1 @ code2 @ [CAM.CAM_Div])
+        | (Error e, _) | (_, Error e) -> error e
+    )
     | Ok (Eq (e1, e2)) -> (
         let res1 = cam_codegen (ok e2) venv in
         match res1 with
