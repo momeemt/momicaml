@@ -1,5 +1,11 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - ".vscode/**"
+      - "README.md"
+      - "LICENSE-*"
+      - ".git*"
 
 jobs:
   build:
@@ -19,4 +25,3 @@ jobs:
           eval $(opam env)
           opam install -y alcotest
           dune runtest
-
