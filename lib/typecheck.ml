@@ -29,15 +29,12 @@ let rec tcheck te e =
       match Environment.lookup x te with
       | Ok param_type -> (
           match tcheck (Environment.ext te x param_type) e1 with
-          | Ok return_type -> (
-              let fun_type = TArrow(param_type, return_type) in
+          | Ok return_type ->
+              let fun_type = TArrow (param_type, return_type) in
               let te_with_fun = Environment.ext te f fun_type in
               tcheck te_with_fun e2
-          )
-          | Error e -> error e
-      )
-      | Error e -> error e
-  )
+          | Error e -> error e)
+      | Error e -> error e)
   | Fun (x, e1) -> (
       let t1 = Environment.lookup x te in
       let t2 = tcheck te e1 in

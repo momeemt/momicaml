@@ -41,11 +41,14 @@ let test_syntax_error () =
   try
     Compiler.compile "1 + " |> ignore;
     Alcotest.fail "should raise syntax error"
-  with
-  | _ -> Alcotest.(check string) "same result" "Syntax error" "Syntax error"
+  with _ ->
+    Alcotest.(check string) "same result" "Syntax error" "Syntax error"
 
 let test_fact () =
-  match Compiler.compile "let rec fact n = if (n = 0) then 1 else (n * fact (n - 1)) in fact 5" with
+  match
+    Compiler.compile
+      "let rec fact n = if (n = 0) then 1 else (n * fact (n - 1)) in fact 5"
+  with
   | Ok res -> Alcotest.(check string) "same result" "120" res
   | Error e -> Alcotest.fail e
 
@@ -69,5 +72,5 @@ let () =
         [ Alcotest.test_case "test_runtime_error" `Quick test_runtime_error ] );
       ( "test_syntax_error",
         [ Alcotest.test_case "test_syntax_error" `Quick test_syntax_error ] );
-      ( "test_fact", [ Alcotest.test_case "test_fact" `Quick test_fact ] );
+      ("test_fact", [ Alcotest.test_case "test_fact" `Quick test_fact ]);
     ]

@@ -39,11 +39,12 @@ module CAM = struct
            | CAM_Return -> "Return"
            | CAM_Let -> "Let ("
            | CAM_EndLet -> ") EndLet"
-           | CAM_Test (a, b) -> "Test (" ^ string_of_code a ^ ", " ^ string_of_code b ^ ")"
+           | CAM_Test (a, b) ->
+               "Test (" ^ string_of_code a ^ ", " ^ string_of_code b ^ ")"
            | CAM_Add -> "Add"
-            | CAM_Sub -> "Sub"
-            | CAM_Mult -> "Mult"
-            | CAM_Div -> "Div"
+           | CAM_Sub -> "Sub"
+           | CAM_Mult -> "Mult"
+           | CAM_Div -> "Div"
            | CAM_Eq -> "Eq")
          code)
 
@@ -102,7 +103,8 @@ module CAM = struct
             | _ -> (error "Type error in CAM_Mult", [], []))
         | CAM_Div -> (
             match stack with
-            | CAM_IntCal _ :: CAM_IntCal 0 :: _ -> (error "Division by zero", [], [])
+            | CAM_IntCal _ :: CAM_IntCal 0 :: _ ->
+                (error "Division by zero", [], [])
             | CAM_IntCal n1 :: CAM_IntCal n2 :: s ->
                 (ok c, env, CAM_IntCal (n1 / n2) :: s)
             | _ -> (error "Type error in CAM_Div", [], []))
