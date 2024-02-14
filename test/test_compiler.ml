@@ -46,8 +46,8 @@ let test_syntax_error () =
 
 let test_fact () =
   match Compiler.compile "let rec fact n = if (n = 0) then 1 else (n * fact (n - 1)) in fact 5" with
-  | Error e -> Alcotest.(check string) "same result" "Typecheck Error" e
-  | _ -> Alcotest.fail "should raise syntax error"
+  | Ok res -> Alcotest.(check string) "same result" "120" res
+  | Error e -> Alcotest.fail e
 
 let () =
   Alcotest.run "Momicaml"
